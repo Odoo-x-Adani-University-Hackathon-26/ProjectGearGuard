@@ -8,6 +8,9 @@ import Dashboard from './pages/Dashboard';
 import Equipment from './pages/Equipments';
 import Profile from './pages/Profile';
 import MaintenanceRequests from "./pages/MaintenanceRequest";
+import MaintenanceTeams from "./pages/MaintenanceTeams";
+import Calendar from "./pages/Calendar";
+import Reports from "./pages/Reports";
 import ProtectedRoute from "./routes/ProtectedRoutes";
 import './App.css';
 
@@ -29,6 +32,9 @@ function App() {
             <Route index element={<Navigate to="/dashboard" replace />} />
             <Route path="Dashboard" element={<Dashboard />} />
             <Route path="MaintenanceRequest" element={<MaintenanceRequests />} />
+            <Route path="MaintenanceTeams" element={<MaintenanceTeams />} />
+            <Route path="Calendar" element={<Calendar />} />
+            <Route path="Reports" element={<Reports />} />
             <Route path="equipment" element={<Equipment />} />
             <Route path="profile" element={<Profile />} />
             {/* Add more protected routes here */}
