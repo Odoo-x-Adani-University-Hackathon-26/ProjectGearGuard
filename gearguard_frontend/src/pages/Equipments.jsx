@@ -1,11 +1,32 @@
 "use client"
 
 import { useState } from "react"
-import { Search, Filter, Plus } from "lucide-react"
+import { motion } from "framer-motion"
+import {
+  Settings,
+  Wrench,
+  Users,
+  Calendar,
+  BarChart3,
+  Search,
+  ChevronDown,
+  Plus,
+  MoreVertical,
+  WrenchIcon,
+} from "lucide-react"
 
-const Equipment = () => {
-  const [searchTerm, setSearchTerm] = useState("")
+const GearGuardDashboard = () => {
+  const [searchQuery, setSearchQuery] = useState("")
   const [selectedCategory, setSelectedCategory] = useState("All Categories")
+  const [isDropdownOpen, setIsDropdownOpen] = useState(false)
+
+  const navigationItems = [
+    { icon: Settings, label: "Equipment", active: true },
+    { icon: Wrench, label: "Maintenance Requests", active: false },
+    { icon: Users, label: "Maintenance Teams", active: false },
+    { icon: Calendar, label: "Calendar", active: false },
+    { icon: BarChart3, label: "Reports", active: false },
+  ]
 
   const equipmentData = [
     {
@@ -73,87 +94,204 @@ const Equipment = () => {
   const getStatusColor = (status) => {
     switch (status) {
       case "Repaired":
-        return "text-emerald-600 bg-emerald-50"
+        return "bg-[#E6F4EA] text-[#2E7D32]"
       case "In Progress":
-        return "text-blue-600 bg-blue-50"
+        return "bg-[#F6F2F5] text-[#7A4D6E]"
       case "New":
-        return "text-gray-600 bg-gray-50"
+        return "bg-[#F6F2F5] text-[#7A4D6E]"
       case "Overdue":
-        return "text-red-600 bg-red-50"
+        return "bg-[#FDECEA] text-[#C62828]"
       default:
-        return "text-gray-600 bg-gray-50"
+        return "bg-gray-100 text-gray-700"
     }
   }
 
+  const containerVariants = {
+    hidden: { opacity: 0 },
+    visible: {
+      opacity: 1,
+      transition: { staggerChildren: 0.1, delayChildren: 0.2 },
+    },
+  }
+
+  const itemVariants = {
+    hidden: { opacity: 0, y: 20 },
+    visible: {
+      opacity: 1,
+      y: 0,
+      transition: { duration: 0.5, ease: "easeOut" },
+    },
+  }
+
+  const rowVariants = {
+    hidden: { opacity: 0, x: -20 },
+    visible: {
+      opacity: 1,
+      x: 0,
+      transition: { duration: 0.4 },
+    },
+    hover: {
+      backgroundColor: "#F6F2F5",
+      transition: { duration: 0.2 },
+    },
+  }
+
   return (
-    <div className="p-8">
-      {/* Page Header */}
-      <div className="mb-8">
-        <h2 className="text-2xl font-semibold text-slate-900 mb-6">Equipment</h2>
+    <div className="flex h-screen bg-white" style={{ backgroundColor: "#FFFFFF" }}>
+      {/* 
+      {/* Main Content */}
+      <motion.div
+        initial={{ opacity: 0 }}
+        animate={{ opacity: 1 }}
+        transition={{ duration: 0.5, delay: 0.2 }}
+        className="flex-1 flex flex-col overflow-hidden"
+      >
+        
 
-        {/* Controls */}
-        <div className="flex items-center gap-4 mb-6">
-          {/* Search */}
-          <div className="flex items-center gap-3 bg-white px-4 py-2 rounded-lg border border-slate-200 flex-1 max-w-md">
-            <Search className="w-5 h-5 text-slate-500" />
-            <input
-              type="text"
-              placeholder="Search equipment..."
-              value={searchTerm}
-              onChange={(e) => setSearchTerm(e.target.value)}
-              className="bg-transparent outline-none text-sm text-slate-700 placeholder-slate-500 flex-1"
-            />
+        {/* Toolbar */}
+        <div
+          className="border-b p-6 flex items-center justify-between gap-4 flex-wrap"
+          style={{ borderColor: "#E6E6EB", backgroundColor: "#FFFFFF" }}
+        >
+          <h2 className="text-xl font-semibold" style={{ color: "#2F2F2F" }}>
+            Equipment
+          </h2>
+          <div className="flex items-center gap-3">
+            <div className="relative">
+              <button
+                onClick={() => setIsDropdownOpen(!isDropdownOpen)}
+                className="flex items-center gap-2 px-4 py-2 rounded-lg border transition-all hover:bg-gray-50"
+                style={{
+                  borderColor: "#E6E6EB",
+                  color: "#2F2F2F",
+                }}
+              >
+                {selectedCategory}
+                <ChevronDown size={18} />
+              </button>
+              {isDropdownOpen && (
+                <motion.div
+                  initial={{ opacity: 0, y: -10 }}
+                  animate={{ opacity: 1, y: 0 }}
+                  exit={{ opacity: 0, y: -10 }}
+                  className="absolute top-full mt-2 w-48 bg-white rounded-lg border shadow-lg z-10"
+                  style={{ borderColor: "#E6E6EB" }}
+                >
+                  {["All Categories", "Assembly", "Machining", "Transport", "Pressing", "Welding"].map((cat) => (
+                    <button
+                      key={cat}
+                      onClick={() => {
+                        setSelectedCategory(cat)
+                        setIsDropdownOpen(false)
+                      }}
+                      className="w-full text-left px-4 py-2 hover:bg-gray-50 transition-colors text-sm"
+                      style={{ color: "#2F2F2F" }}
+                    >
+                      {cat}
+                    </button>
+                  ))}
+                </motion.div>
+              )}
+            </div>
+            <motion.button
+              whileHover={{ scale: 1.05 }}
+              whileTap={{ scale: 0.95 }}
+              className="flex items-center gap-2 px-4 py-2 rounded-lg text-white font-medium transition-all hover:shadow-lg"
+              style={{ backgroundColor: "#7A4D6E" }}
+            >
+              <Plus size={18} />
+              Add Equipment
+            </motion.button>
           </div>
-
-          {/* Filter Dropdown */}
-          <button className="flex items-center gap-2 px-4 py-2 border border-slate-200 rounded-lg hover:bg-slate-50 transition-colors">
-            <Filter className="w-5 h-5 text-slate-700" />
-            <span className="text-sm font-medium text-slate-700">{selectedCategory}</span>
-          </button>
-
-          {/* Add Equipment Button */}
-          <button className="flex items-center gap-2 px-4 py-2 bg-purple-700 text-white rounded-lg hover:bg-purple-800 transition-colors ml-auto">
-            <Plus className="w-5 h-5" />
-            <span className="text-sm font-medium">Add Equipment</span>
-          </button>
         </div>
-      </div>
 
-      {/* Table */}
-      <div className="overflow-x-auto rounded-lg border border-slate-200">
-        <table className="w-full">
-          <thead>
-            <tr className="bg-slate-50 border-b border-slate-200">
-              <th className="px-6 py-4 text-left text-sm font-semibold text-slate-900">EQUIPMENT NAME</th>
-              <th className="px-6 py-4 text-left text-sm font-semibold text-slate-900">CATEGORY</th>
-              <th className="px-6 py-4 text-left text-sm font-semibold text-slate-900">ASSIGNED TEAM</th>
-              <th className="px-6 py-4 text-left text-sm font-semibold text-slate-900">ASSIGNED TECHNICIAN</th>
-              <th className="px-6 py-4 text-left text-sm font-semibold text-slate-900">LOCATION</th>
-              <th className="px-6 py-4 text-left text-sm font-semibold text-slate-900">STATUS</th>
-              <th className="px-6 py-4 text-left text-sm font-semibold text-slate-900">MAINTENANCE</th>
-            </tr>
-          </thead>
-          <tbody>
-            {equipmentData.map((item) => (
-              <tr key={item.id} className="border-b border-slate-200 hover:bg-slate-50 transition-colors">
-                <td className="px-6 py-4 text-sm font-medium text-slate-900">{item.name}</td>
-                <td className="px-6 py-4 text-sm text-slate-600">{item.category}</td>
-                <td className="px-6 py-4 text-sm text-slate-600">{item.team}</td>
-                <td className="px-6 py-4 text-sm text-slate-600">{item.technician}</td>
-                <td className="px-6 py-4 text-sm text-slate-600">{item.location}</td>
-                <td className="px-6 py-4">
-                  <span className={`px-3 py-1 rounded-full text-sm font-medium ${getStatusColor(item.status)}`}>
-                    {item.status}
-                  </span>
-                </td>
-                <td className="px-6 py-4 text-sm text-slate-600">{item.maintenance}</td>
-              </tr>
-            ))}
-          </tbody>
-        </table>
-      </div>
+        {/* Table */}
+        <motion.div
+          initial="hidden"
+          animate="visible"
+          variants={containerVariants}
+          className="flex-1 overflow-auto p-6"
+        >
+          <div className="rounded-lg border" style={{ borderColor: "#E6E6EB" }}>
+            <table className="w-full">
+              <thead>
+                <tr className="border-b" style={{ borderColor: "#E6E6EB", backgroundColor: "#F6F2F5" }}>
+                  <th className="px-6 py-4 text-left text-sm font-semibold" style={{ color: "#2F2F2F" }}>
+                    EQUIPMENT NAME
+                  </th>
+                  <th className="px-6 py-4 text-left text-sm font-semibold" style={{ color: "#2F2F2F" }}>
+                    CATEGORY
+                  </th>
+                  <th className="px-6 py-4 text-left text-sm font-semibold" style={{ color: "#2F2F2F" }}>
+                    ASSIGNED TEAM
+                  </th>
+                  <th className="px-6 py-4 text-left text-sm font-semibold" style={{ color: "#2F2F2F" }}>
+                    ASSIGNED TECHNICIAN
+                  </th>
+                  <th className="px-6 py-4 text-left text-sm font-semibold" style={{ color: "#2F2F2F" }}>
+                    LOCATION
+                  </th>
+                  <th className="px-6 py-4 text-left text-sm font-semibold" style={{ color: "#2F2F2F" }}>
+                    STATUS
+                  </th>
+                  <th className="px-6 py-4 text-left text-sm font-semibold" style={{ color: "#2F2F2F" }}>
+                    MAINTENANCE
+                  </th>
+                </tr>
+              </thead>
+              <tbody>
+                {equipmentData.map((item, index) => (
+                  <motion.tr
+                    key={item.id}
+                    variants={rowVariants}
+                    initial="hidden"
+                    animate="visible"
+                    transition={{ delay: index * 0.05 }}
+                    whileHover="hover"
+                    className="border-b transition-colors cursor-pointer"
+                    style={{ borderColor: "#E6E6EB" }}
+                  >
+                    <td className="px-6 py-4 text-sm font-medium" style={{ color: "#2F2F2F" }}>
+                      {item.name}
+                    </td>
+                    <td className="px-6 py-4 text-sm" style={{ color: "#9B6B8A" }}>
+                      {item.category}
+                    </td>
+                    <td className="px-6 py-4 text-sm" style={{ color: "#7A4D6E" }}>
+                      {item.team}
+                    </td>
+                    <td className="px-6 py-4 text-sm" style={{ color: "#9B6B8A" }}>
+                      {item.technician}
+                    </td>
+                    <td className="px-6 py-4 text-sm" style={{ color: "#2F2F2F" }}>
+                      {item.location}
+                    </td>
+                    <td className="px-6 py-4 text-sm">
+                      <span className={`px-3 py-1 rounded-full text-xs font-medium ${getStatusColor(item.status)}`}>
+                        {item.status}
+                      </span>
+                    </td>
+                    <td className="px-6 py-4 text-sm flex items-center gap-3" style={{ color: "#2F2F2F" }}>
+                      {item.maintenance !== "—" && (
+                        <>
+                          <WrenchIcon size={16} />
+                          {item.maintenance}
+                        </>
+                      )}
+                      {item.maintenance === "—" && "—"}
+                      <button className="p-1 hover:bg-gray-100 rounded transition-colors">
+                        <MoreVertical size={16} style={{ color: "#9B6B8A" }} />
+                      </button>
+                    </td>
+                  </motion.tr>
+                ))}
+              </tbody>
+            </table>
+          </div>
+        </motion.div>
+      </motion.div>
     </div>
   )
 }
 
-export default Equipment
+export default GearGuardDashboard

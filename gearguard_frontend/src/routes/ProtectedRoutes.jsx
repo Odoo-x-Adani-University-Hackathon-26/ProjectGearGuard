@@ -3,6 +3,8 @@ import { Navigate } from 'react-router-dom';
 import { useAuth } from '../context/AuthContext';
 import { useEffect, useState } from 'react';
 
+
+
 const ProtectedRoute = ({ children }) => {
   const { user, loading, refreshUserData } = useAuth();
   const [checkingAuth, setCheckingAuth] = useState(true);

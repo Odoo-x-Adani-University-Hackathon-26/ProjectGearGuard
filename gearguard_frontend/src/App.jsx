@@ -7,6 +7,7 @@ import Layout from './layout/layout';
 import Dashboard from './pages/Dashboard';
 import Equipment from './pages/Equipments';
 import Profile from './pages/Profile';
+import MaintenanceRequests from "./pages/MaintenanceRequest";
 import ProtectedRoute from "./routes/ProtectedRoutes";
 import './App.css';
 
@@ -26,7 +27,8 @@ function App() {
             </ProtectedRoute>
           }>
             <Route index element={<Navigate to="/dashboard" replace />} />
-            <Route path="dashboard" element={<Dashboard />} />
+            <Route path="Dashboard" element={<Dashboard />} />
+            <Route path="MaintenanceRequest" element={<MaintenanceRequests />} />
             <Route path="equipment" element={<Equipment />} />
             <Route path="profile" element={<Profile />} />
             {/* Add more protected routes here */}

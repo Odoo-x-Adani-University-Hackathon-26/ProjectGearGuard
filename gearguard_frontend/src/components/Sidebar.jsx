@@ -1,65 +1,105 @@
 "use client"
 
-import { useState } from "react"
-import { Settings, ClipboardList, Users, Calendar, BarChart3, ChevronLeft, ChevronRight } from "lucide-react"
+import { motion } from "framer-motion"
+import {
+  Settings,
+  Wrench,
+  Users,
+  Calendar,
+  BarChart3,
+  WrenchIcon,
+} from "lucide-react"
+import { NavLink, useLocation } from "react-router-dom"
 
-const Sidebar = ({ isCollapsed, setIsCollapsed }) => {
-  const [activeItem, setActiveItem] = useState("Equipment")
+const GearGuardSidebar = () => {
+  const location = useLocation()
 
-  const menuItems = [
-    { icon: Settings, label: "Equipment", id: "Equipment" },
-    { icon: ClipboardList, label: "Maintenance Requests", id: "MaintenanceRequests" },
-    { icon: Users, label: "Maintenance Teams", id: "MaintenanceTeams" },
-    { icon: Calendar, label: "Calendar", id: "Calendar" },
-    { icon: BarChart3, label: "Reports", id: "Reports" },
+  const navigationItems = [
+    { 
+      icon: Settings, 
+      label: "Equipment", 
+      path: "/Equipment",
+      active: location.pathname === "/equipment"
+    },
+    { 
+      icon: Wrench, 
+      label: "Maintenance Request", 
+      path: "/MaintenanceRequest",
+      active: location.pathname === "/MaintenanceRequest"
+    },
+    { 
+      icon: Users, 
+      label: "Maintenance Teams", 
+      path: "/teams",
+      active: location.pathname === "/teams"
+    },
+    { 
+      icon: Calendar, 
+      label: "Calendar", 
+      path: "/calendar",
+      active: location.pathname === "/calendar"
+    },
+    { 
+      icon: BarChart3, 
+      label: "Reports", 
+      path: "/reports",
+      active: location.pathname === "/reports"
+    },
   ]
 
   return (
-    <div
-      className={`${isCollapsed ? "w-20" : "w-64"} bg-slate-100 h-screen border-r border-slate-200 transition-all duration-300 flex flex-col`}
+    <motion.div
+      initial={{ x: -100, opacity: 0 }}
+      animate={{ x: 0, opacity: 1 }}
+      transition={{ duration: 0.5 }}
+      className="w-56 border-r h-screen flex-shrink-0"
+      style={{ borderColor: "#E6E6EB", backgroundColor: "#FFFFFF" }}
     >
-      {/* Logo Section */}
-      <div className={`flex items-center gap-3 p-6 border-b border-slate-200 ${isCollapsed ? "justify-center" : ""}`}>
-        <div className="w-10 h-10 bg-purple-700 rounded flex items-center justify-center">
-          <Settings className="w-6 h-6 text-white" />
+      {/* Logo */}
+      <NavLink to="/" className="block">
+        <div className="flex items-center gap-3 p-6 border-b hover:bg-gray-50 transition-colors" style={{ borderColor: "#E6E6EB" }}>
+          <div
+            className="w-10 h-10 rounded-lg flex items-center justify-center text-white"
+            style={{ backgroundColor: "#7A4D6E" }}
+          >
+            <WrenchIcon size={24} />
+          </div>
+          <span className="font-bold text-lg" style={{ color: "#2F2F2F" }}>
+            GearGuard
+          </span>
         </div>
-        {!isCollapsed && <span className="text-xl font-bold text-slate-900">GearGuard</span>}
-      </div>
+      </NavLink>
 
-      {/* Menu Items */}
-      <nav className="flex-1 p-4 space-y-2">
-        {menuItems.map((item) => {
+      {/* Navigation */}
+      <nav className="p-4 space-y-2">
+        {navigationItems.map((item, index) => {
           const Icon = item.icon
           return (
-            <button
-              key={item.id}
-              onClick={() => setActiveItem(item.id)}
-              className={`w-full flex items-center gap-4 px-4 py-3 rounded-lg transition-colors ${
-                activeItem === item.id ? "bg-slate-200 text-slate-900" : "text-slate-700 hover:bg-slate-150"
-              } ${isCollapsed ? "justify-center" : ""}`}
+            <NavLink
+              key={index}
+              to={item.path}
+              className={({ isActive }) => 
+                `block w-full ${isActive ? 'text-white' : 'text-gray-600 hover:bg-gray-50'}`
+              }
+              end={item.path === "/"}
             >
-              <Icon className="w-5 h-5 flex-shrink-0" />
-              {!isCollapsed && <span className="text-sm font-medium">{item.label}</span>}
-            </button>
+              <motion.div
+                whileHover={{ x: 4 }}
+                whileTap={{ scale: 0.98 }}
+                className={`flex items-center gap-3 px-4 py-3 rounded-lg transition-all`}
+                style={{
+                  backgroundColor: location.pathname === item.path ? "#7A4D6E" : "transparent",
+                }}
+              >
+                <Icon size={20} />
+                <span className="text-sm font-medium">{item.label}</span>
+              </motion.div>
+            </NavLink>
           )
         })}
       </nav>
-
-      {/* Collapse Button */}
-      <div className="p-4 border-t border-slate-200">
-        <button
-          onClick={() => setIsCollapsed(!isCollapsed)}
-          className="w-full flex items-center justify-center p-2 hover:bg-slate-200 rounded-lg transition-colors"
-        >
-          {isCollapsed ? (
-            <ChevronRight className="w-5 h-5 text-slate-700" />
-          ) : (
-            <ChevronLeft className="w-5 h-5 text-slate-700" />
-          )}
-        </button>
-      </div>
-    </div>
+    </motion.div>
   )
 }
 
-export default Sidebar
+export default GearGuardSidebar
