@@ -1,0 +1,10 @@
+# Ingnore all node modules
+node_modules
+# Ignore package lock files
+package-lock.json
+# Ignore environment files
+pashumitra_backend/.env
+# Ignore backend node modules
+pashumitra_backend/node_modules
+# Ignore environment files
+.env
