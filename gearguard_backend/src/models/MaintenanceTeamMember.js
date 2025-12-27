@@ -1,28 +1,26 @@
 // models/MaintenanceTeamMember.js
-const { DataTypes } = require('sequelize');
+const mongoose = require("mongoose");
 
-module.exports = (sequelize) => {
-  const MaintenanceTeamMember = sequelize.define('MaintenanceTeamMember', {
-    id: {
-      type: DataTypes.INTEGER,
-      primaryKey: true,
-      autoIncrement: true
-    },
+const maintenanceTeamMemberSchema = new mongoose.Schema(
+  {
     teamId: {
-      type: DataTypes.INTEGER,
-      allowNull: false,
-      field: 'team_id'
+      type: mongoose.Schema.Types.ObjectId,
+      ref: "MaintenanceTeam",
+      required: true,
     },
     userId: {
-      type: DataTypes.INTEGER,
-      allowNull: false,
-      field: 'user_id'
-    }
-  }, {
-    tableName: 'maintenance_team_members',
-    timestamps: false,
-    underscored: true
-  });
+      type: mongoose.Schema.Types.ObjectId,
+      ref: "User",
+      required: true,
+    },
+  },
+  {
+    collection: "maintenance_team_members",
+    timestamps: false, // same as Sequelize timestamps: false
+  }
+);
 
-  return MaintenanceTeamMember;
-};
+module.exports = mongoose.model(
+  "MaintenanceTeamMember",
+  maintenanceTeamMemberSchema
+);
