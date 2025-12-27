@@ -9,6 +9,11 @@ const connectDB = require('./src/config/db');
 // Route imports
 const authRoutes = require('./src/routes/authRoutes');
 const maintenanceTeamRoutes = require('./src/routes/maintenanceTeamRoutes');
+const maintenanceRoutes = require('./src/routes/maintenanceRoutes');
+const equipmentRoutes = require('./src/routes/equipmentRoutes');
+const teamRoutes = require('./src/routes/teamRoutes');
+const departmentRoutes = require('./src/routes/departmentRoutes');
+const dashboardRoutes = require('./src/routes/dashboardRoutes');
 // const userRoutes = require('./src/routes/userRoutes');
 
 // Connect to database
@@ -26,6 +31,11 @@ app.use(morgan('dev'));
 // Routes
 app.use('/api/auth', authRoutes);
 app.use('/api/maintenance-teams', maintenanceTeamRoutes);
+app.use('/api/maintenance', maintenanceRoutes);
+app.use('/api/equipment', equipmentRoutes);
+app.use('/api/teams', teamRoutes);
+app.use('/api/departments', departmentRoutes);
+app.use('/api/dashboard', dashboardRoutes);
 // app.use('/api/users', userRoutes);
 
 // Error handling middleware
