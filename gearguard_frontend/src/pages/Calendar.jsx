@@ -276,6 +276,7 @@ const TaskDetailsModal = ({ task, onClose, onAction }) => {
   const getStatusColor = (status) => {
     const colors = {
       new: { bg: '#F6F2F5', text: '#7A4D6E', label: 'New' },
+      scheduled: { bg: '#F6F2F5', text: '#7A4D6E', label: 'Scheduled' },
       assigned: { bg: '#E3F2FD', text: '#1976D2', label: 'Assigned' },
       in_progress: { bg: '#FFF4E5', text: '#E65100', label: 'In Progress' },
       completed: { bg: '#E6F4EA', text: '#2E7D32', label: 'Completed' }
@@ -347,10 +348,10 @@ const TaskDetailsModal = ({ task, onClose, onAction }) => {
               </div>
 
               <div>
-                <p className="text-sm text-gray-600 mb-1">Assigned Technician</p>
+                <p className="text-sm text-gray-600 mb-1">Request Type</p>
                 <p className="font-medium" style={{ color: '#2F2F2F' }}>
                   <Wrench className="inline w-4 h-4 mr-2" />
-                  {task.technician?.name || 'Not Assigned'}
+                  {task.requestType ? task.requestType.charAt(0).toUpperCase() + task.requestType.slice(1) : 'Preventive'}
                 </p>
               </div>
             </div>
@@ -408,6 +409,31 @@ const TaskDetailsModal = ({ task, onClose, onAction }) => {
   );
 };
 
+// Helper function to check if a day is today
+const isToday = (currentDate, day) => {
+  const today = new Date();
+  return (
+    currentDate.getFullYear() === today.getFullYear() &&
+    currentDate.getMonth() === today.getMonth() &&
+    day === today.getDate()
+  );
+};
+
+// Helper function to remove duplicate tasks by ID
+const removeDuplicateTasks = (tasks) => {
+  const uniqueTasks = [];
+  const taskIds = new Set();
+  
+  tasks.forEach(task => {
+    if (!taskIds.has(task._id)) {
+      taskIds.add(task._id);
+      uniqueTasks.push(task);
+    }
+  });
+  
+  return uniqueTasks;
+};
+
 // Main Calendar Component
 const PreventiveMaintenanceCalendar = () => {
   const { user } = useAuth();
@@ -435,11 +461,19 @@ const PreventiveMaintenanceCalendar = () => {
 
       // Fetch calendar data
       const scheduleRes = await calendarService.getMaintenanceSchedule(year, month);
-      setCalendarData(scheduleRes.data);
+      setCalendarData(scheduleRes.data || {});
 
-      // Fetch upcoming tasks
+      // Fetch upcoming tasks with date information
       const tasksRes = await calendarService.getUpcomingTasks(30);
-      setUpcomingTasks(tasksRes.data);
+      const formattedTasks = (tasksRes.data || []).map(task => ({
+        ...task,
+        date: task.scheduledDate || task.date || new Date().toISOString(),
+        type: task.requestType || 'preventive',
+        title: task.subject || 'Untitled Task',
+        priority: task.priority || 'medium',
+        status: task.status || 'scheduled'
+      }));
+      setUpcomingTasks(formattedTasks);
 
       // Fetch equipment and teams for dropdowns
       const [equipmentRes, teamsRes, statsRes] = await Promise.all([
@@ -448,9 +482,9 @@ const PreventiveMaintenanceCalendar = () => {
         calendarService.getMaintenanceStats()
       ]);
 
-      setEquipmentList(equipmentRes.data);
-      setTeamList(teamsRes.data);
-      setStats(statsRes.data);
+      setEquipmentList(equipmentRes.data || []);
+      setTeamList(teamsRes.data || []);
+      setStats(statsRes.data || {});
 
     } catch (err) {
       console.error('Failed to fetch calendar data:', err);
@@ -538,16 +572,18 @@ const PreventiveMaintenanceCalendar = () => {
   const getEventIcon = (type) => {
     switch(type) {
       case 'preventive': return <Wrench className="w-3 h-3" />;
+      case 'corrective': return <AlertCircle className="w-3 h-3" />;
       case 'inspection': return <Search className="w-3 h-3" />;
       case 'calibration': return <Settings className="w-3 h-3" />;
       case 'lubrication': return <Droplets className="w-3 h-3" />;
-      default: return <AlertCircle className="w-3 h-3" />;
+      default: return <Wrench className="w-3 h-3" />;
     }
   };
 
   const getPriorityBadge = (priority) => {
     const colors = {
       high: { bg: '#FDECEA', text: '#C62828', label: 'High' },
+      critical: { bg: '#FDECEA', text: '#C62828', label: 'Critical' },
       medium: { bg: '#FFF4E5', text: '#E65100', label: 'Medium' },
       low: { bg: '#E6F4EA', text: '#2E7D32', label: 'Low' }
     };
@@ -694,11 +730,15 @@ const PreventiveMaintenanceCalendar = () => {
               <div className="flex items-center gap-4">
                 <div className="flex items-center gap-2">
                   <div className="w-3 h-3 rounded-full" style={{ backgroundColor: '#E6F4EA' }}></div>
-                  <span className="text-sm" style={{ color: '#2F2F2F' }}>Scheduled</span>
+                  <span className="text-sm" style={{ color: '#2F2F2F' }}>Preventive</span>
+                </div>
+                <div className="flex items-center gap-2">
+                  <div className="w-3 h-3 rounded-full" style={{ backgroundColor: '#E3F2FD' }}></div>
+                  <span className="text-sm" style={{ color: '#2F2F2F' }}>Corrective</span>
                 </div>
                 <div className="flex items-center gap-2">
                   <div className="w-3 h-3 rounded-full" style={{ backgroundColor: '#FDECEA' }}></div>
-                  <span className="text-sm" style={{ color: '#2F2F2F' }}>Critical/High Priority</span>
+                  <span className="text-sm" style={{ color: '#2F2F2F' }}>High Priority</span>
                 </div>
               </div>
             </div>
@@ -722,79 +762,202 @@ const PreventiveMaintenanceCalendar = () => {
                   ))}
                 </div>
 
-                {/* Calendar Days */}
+                {/* Calendar Days - FIXED VERSION */}
                 <div className="grid grid-cols-7 gap-1">
                   {daysInMonth.map((day) => {
+                    // Get events ONLY from calendarData (this is the main source)
                     const events = calendarData[day] || [];
-                    const hasEvents = events.length > 0;
+                    
+                    // Remove duplicate tasks by ID to ensure each task appears only once
+                    const uniqueEvents = removeDuplicateTasks(events);
+                    
+                    const hasEvents = uniqueEvents.length > 0;
                     
                     return (
                       <motion.div
                         key={day}
                         whileHover={{ scale: 1.02 }}
-                        className={`min-h-[120px] p-2 border rounded-lg cursor-pointer transition-all ${
-                          hasEvents ? 'hover:shadow-md' : ''
+                        className={`min-h-[120px] p-2 border rounded-lg transition-all ${
+                          hasEvents ? 'cursor-pointer hover:shadow-md' : ''
                         }`}
                         style={{ 
-                          borderColor: '#E6E6EB',
-                          backgroundColor: hasEvents ? '#FFFFFF' : '#FFFFFF'
+                          borderColor: hasEvents ? '#7A4D6E' : '#E6E6EB',
+                          backgroundColor: hasEvents ? '#F6F2F5' : '#FFFFFF',
+                          borderWidth: hasEvents ? '2px' : '1px'
                         }}
                         onClick={() => {
-                          if (hasEvents) {
-                            // Show first event details
-                            handleTaskAction(events[0], 'view');
+                          if (hasEvents && uniqueEvents[0]) {
+                            handleTaskAction(uniqueEvents[0], 'view');
                           }
                         }}
                       >
+                        {/* Date Header */}
                         <div className="flex justify-between items-start mb-2">
-                          <span 
-                            className={`text-sm font-medium ${
-                              hasEvents ? 'font-bold' : ''
-                            }`}
-                            style={{ color: '#2F2F2F' }}
-                          >
-                            {day}
-                          </span>
+                          <div className="flex items-center gap-2">
+                            <span 
+                              className={`text-sm font-medium ${
+                                hasEvents ? 'font-bold' : ''
+                              }`}
+                              style={{ 
+                                color: hasEvents ? '#7A4D6E' : '#2F2F2F'
+                              }}
+                            >
+                              {day}
+                            </span>
+                            
+                            {/* Today indicator */}
+                            {isToday(currentDate, day) && (
+                              <span className="w-2 h-2 rounded-full bg-blue-500"></span>
+                            )}
+                          </div>
+                          
+                          {/* Event indicators */}
                           {hasEvents && (
-                            <div className="flex gap-1">
-                              {events.slice(0, 3).map((event, idx) => (
-                                <div
-                                  key={idx}
-                                  className="w-2 h-2 rounded-full"
-                                  style={{ backgroundColor: event.textColor }}
-                                ></div>
-                              ))}
-                              {events.length > 3 && (
-                                <span className="text-xs text-gray-500">+{events.length - 3}</span>
-                              )}
+                            <div className="flex items-center gap-1">
+                              <div className="text-xs text-gray-500">
+                                {uniqueEvents.length}
+                              </div>
+                              <div className="flex gap-1">
+                                {uniqueEvents.slice(0, 3).map((event, idx) => {
+                                  const priority = event.priority || 'medium';
+                                  const requestType = event.requestType || 'preventive';
+                                  
+                                  // Determine color based on request type and priority
+                                  let dotColor = '#2E7D32'; // Default green for preventive
+                                  if (requestType === 'corrective') dotColor = '#1976D2'; // Blue for corrective
+                                  if (priority === 'high' || priority === 'critical') dotColor = '#C62828'; // Red for high priority
+                                  
+                                  return (
+                                    <div
+                                      key={idx}
+                                      className="w-2 h-2 rounded-full"
+                                      style={{ 
+                                        backgroundColor: dotColor
+                                      }}
+                                      title={`${event.title} (${requestType} - ${priority} priority)`}
+                                    ></div>
+                                  );
+                                })}
+                                {uniqueEvents.length > 3 && (
+                                  <span className="text-xs text-gray-500">+{uniqueEvents.length - 3}</span>
+                                )}
+                              </div>
                             </div>
                           )}
                         </div>
                         
-                        {/* Events */}
-                        <div className="space-y-1">
-                          {events.slice(0, 2).map((event, idx) => (
-                            <motion.div
-                              key={idx}
-                              initial={{ opacity: 0, scale: 0.9 }}
-                              animate={{ opacity: 1, scale: 1 }}
-                              className="text-xs px-2 py-1.5 rounded flex items-center gap-1"
-                              style={{ 
-                                backgroundColor: event.color,
-                                color: event.textColor,
-                                border: `1px solid ${event.textColor}20`
-                              }}
-                            >
-                              {getEventIcon(event.type)}
-                              <span className="font-medium truncate">{event.title}</span>
-                            </motion.div>
-                          ))}
-                          {events.length > 2 && (
-                            <div className="text-xs text-center text-gray-500">
-                              +{events.length - 2} more
+                        {/* Events Display - SHOW ONLY UNIQUE EVENTS */}
+                        <div className="space-y-1 max-h-[80px] overflow-y-auto">
+                          {uniqueEvents.slice(0, 3).map((event, idx) => {
+                            const priority = event.priority || 'medium';
+                            const requestType = event.requestType || 'preventive';
+                            const isOverdue = event.isOverdue || event.status === 'overdue';
+                            
+                            // Determine colors based on request type and priority
+                            let colors = {
+                              bg: '#E6F4EA', // Light green for preventive
+                              text: '#2E7D32', // Green text
+                              border: '#A7D7A4' // Light green border
+                            };
+                            
+                            if (requestType === 'corrective') {
+                              colors = {
+                                bg: '#E3F2FD', // Light blue for corrective
+                                text: '#1976D2', // Blue text
+                                border: '#90CAF9' // Light blue border
+                              };
+                            }
+                            
+                            // Priority overrides
+                            if (priority === 'high' || priority === 'critical') {
+                              colors = {
+                                bg: '#FDECEA', // Light red
+                                text: '#C62828', // Red text
+                                border: '#F5C2C7' // Light red border
+                              };
+                            } else if (priority === 'medium') {
+                              colors = {
+                                bg: '#FFF4E5', // Light orange
+                                text: '#E65100', // Orange text
+                                border: '#FFD8A6' // Light orange border
+                              };
+                            }
+                            
+                            // Overdue override
+                            if (isOverdue) {
+                              colors = {
+                                bg: '#FDECEA', // Light red
+                                text: '#C62828', // Red text
+                                border: '#F5C2C7' // Light red border
+                              };
+                            }
+                            
+                            // Completed override
+                            if (event.status === 'completed') {
+                              colors = {
+                                bg: '#F3F4F6', // Light gray
+                                text: '#6B7280', // Gray text
+                                border: '#D1D5DB' // Gray border
+                              };
+                            }
+
+                            return (
+                              <motion.div
+                                key={event._id || idx}
+                                initial={{ opacity: 0, scale: 0.9 }}
+                                animate={{ opacity: 1, scale: 1 }}
+                                className="text-xs px-2 py-1.5 rounded flex items-center gap-1 border"
+                                style={{ 
+                                  backgroundColor: colors.bg,
+                                  color: colors.text,
+                                  borderColor: colors.border
+                                }}
+                                title={`${event.title} - ${event.description || 'No description'} (${requestType}, ${priority} priority)`}
+                              >
+                                {getEventIcon(requestType)}
+                                <span className="font-medium truncate">
+                                  {event.title.length > 15 ? `${event.title.substring(0, 15)}...` : event.title}
+                                </span>
+                                {isOverdue && (
+                                  <AlertCircle className="w-3 h-3 ml-auto" />
+                                )}
+                              </motion.div>
+                            );
+                          })}
+                          
+                          {uniqueEvents.length === 0 && (
+                            <div className="text-center py-4">
+                              <p className="text-xs text-gray-400">No tasks</p>
+                            </div>
+                          )}
+                          
+                          {uniqueEvents.length > 3 && (
+                            <div className="text-xs text-center text-gray-500 pt-1">
+                              +{uniqueEvents.length - 3} more
                             </div>
                           )}
                         </div>
+                        
+                        {/* Status summary */}
+                        {hasEvents && (
+                          <div className="mt-2 flex items-center justify-between text-xs">
+                            <div className="flex items-center gap-1">
+                              {uniqueEvents.some(e => e.priority === 'critical' || e.priority === 'high') && (
+                                <AlertCircle className="w-3 h-3 text-red-500" />
+                              )}
+                              {uniqueEvents.some(e => e.isOverdue || e.status === 'overdue') && (
+                                <span className="text-red-500 font-medium">Overdue</span>
+                              )}
+                            </div>
+                            
+                            <div className="flex items-center gap-1">
+                              <Clock className="w-3 h-3 text-gray-500" />
+                              <span className="text-gray-500">
+                                {uniqueEvents.length} task{uniqueEvents.length > 1 ? 's' : ''}
+                              </span>
+                            </div>
+                          </div>
+                        )}
                       </motion.div>
                     );
                   })}
@@ -829,20 +992,20 @@ const PreventiveMaintenanceCalendar = () => {
                 <div className="flex items-center gap-3 p-3 rounded-lg hover:shadow-sm transition-shadow cursor-pointer"
                   style={{ backgroundColor: '#F6F2F5' }}
                 >
-                  <div className="p-2 rounded" style={{ backgroundColor: '#FDECEA' }}>
-                    <Settings className="w-5 h-5" style={{ color: '#C62828' }} />
+                  <div className="p-2 rounded" style={{ backgroundColor: '#E3F2FD' }}>
+                    <AlertCircle className="w-5 h-5" style={{ color: '#1976D2' }} />
                   </div>
                   <div>
-                    <h4 className="font-medium" style={{ color: '#2F2F2F' }}>Calibration</h4>
-                    <p className="text-sm" style={{ color: '#9B6B8A' }}>Precision adjustment and verification</p>
+                    <h4 className="font-medium" style={{ color: '#2F2F2F' }}>Corrective Maintenance</h4>
+                    <p className="text-sm" style={{ color: '#9B6B8A' }}>Fix equipment failures and issues</p>
                   </div>
                 </div>
                 
                 <div className="flex items-center gap-3 p-3 rounded-lg hover:shadow-sm transition-shadow cursor-pointer"
                   style={{ backgroundColor: '#F6F2F5' }}
                 >
-                  <div className="p-2 rounded" style={{ backgroundColor: '#E6F4EA' }}>
-                    <Search className="w-5 h-5" style={{ color: '#2E7D32' }} />
+                  <div className="p-2 rounded" style={{ backgroundColor: '#FFF4E5' }}>
+                    <Search className="w-5 h-5" style={{ color: '#E65100' }} />
                   </div>
                   <div>
                     <h4 className="font-medium" style={{ color: '#2F2F2F' }}>Inspection</h4>
