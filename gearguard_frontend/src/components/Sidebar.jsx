@@ -7,7 +7,7 @@ import {
   Users,
   Calendar,
   BarChart3,
-  WrenchIcon,
+  ChartBar
 } from "lucide-react"
 import { NavLink, useLocation } from "react-router-dom"
 
@@ -15,6 +15,12 @@ const GearGuardSidebar = () => {
   const location = useLocation()
 
   const navigationItems = [
+    {
+      icon: ChartBar, 
+      label: "Dashboard", 
+      path: "/Dashboard",
+      active: location.pathname === "/dashboard"
+    },
     { 
       icon: Settings, 
       label: "Equipment", 
@@ -58,12 +64,8 @@ const GearGuardSidebar = () => {
       {/* Logo */}
       <NavLink to="/" className="block">
         <div className="flex items-center gap-3 p-6 border-b hover:bg-gray-50 transition-colors" style={{ borderColor: "#E6E6EB" }}>
-          <div
-            className="w-10 h-10 rounded-lg flex items-center justify-center text-white"
-            style={{ backgroundColor: "#7A4D6E" }}
-          >
-            <WrenchIcon size={24} />
-          </div>
+          {/* Image Logo */}
+          <img src="/Logo.png" alt="GearGuard Logo" className="h-8 w-8 object-contain" />
           <span className="font-bold text-lg" style={{ color: "#2F2F2F" }}>
             GearGuard
           </span>
