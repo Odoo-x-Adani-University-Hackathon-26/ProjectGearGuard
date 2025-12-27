@@ -2,272 +2,163 @@
 
 import { useState } from "react"
 import {
-  Settings,
-  ClipboardList,
-  Users,
-  Calendar,
-  BarChart3,
-  ChevronLeft,
-  ChevronRight,
   Search,
-  Filter,
   Plus,
-  Bell,
-  ChevronDown,
+  AlertTriangle,
+  TrendingUp,
+  Clock,
 } from "lucide-react"
 
-// Sidebar Component
-const Sidebar = ({ isCollapsed, setIsCollapsed }) => {
-  const [activeItem, setActiveItem] = useState("Equipment")
+// Dashboard Component
+export default function DashboardContent() {
+  const [searchTerm, setSearchTerm] = useState("")
 
-  const menuItems = [
-    { icon: Settings, label: "Equipment", id: "Equipment" },
-    { icon: ClipboardList, label: "Maintenance Requests", id: "MaintenanceRequests" },
-    { icon: Users, label: "Maintenance Teams", id: "MaintenanceTeams" },
-    { icon: Calendar, label: "Calendar", id: "Calendar" },
-    { icon: BarChart3, label: "Reports", id: "Reports" },
+  const maintenanceData = [
+    {
+      id: 1,
+      subject: "Test activity",
+      employee: "Mitchell Adams",
+      technician: "Alex Foster",
+      category: "Computer",
+      stage: "New Request",
+      comments: "My company",
+    },
+    {
+      id: 2,
+      subject: "Equipment calibration",
+      employee: "Sarah Chen",
+      technician: "Mike Johnson",
+      category: "Machining",
+      stage: "In Progress",
+      comments: "Pending review",
+    },
+    {
+      id: 3,
+      subject: "Preventive maintenance",
+      employee: "Tom Brown",
+      technician: "Emma Wilson",
+      category: "Assembly",
+      stage: "Scheduled",
+      comments: "Next week",
+    },
+    {
+      id: 4,
+      subject: "Emergency repair",
+      employee: "John Doe",
+      technician: "Sarah Chen",
+      category: "Transport",
+      stage: "Urgent",
+      comments: "High priority",
+    },
   ]
 
   return (
-    <div
-      className={`${isCollapsed ? "w-20" : "w-64"} bg-slate-100 h-screen border-r border-slate-200 transition-all duration-300 flex flex-col`}
-    >
-      <div className={`flex items-center gap-3 p-6 border-b border-slate-200 ${isCollapsed ? "justify-center" : ""}`}>
-        <div className="w-10 h-10 bg-purple-700 rounded flex items-center justify-center">
-          <Settings className="w-6 h-6 text-white" />
-        </div>
-        {!isCollapsed && <span className="text-xl font-bold text-slate-900">GearGuard</span>}
-      </div>
+    <div className="min-h-screen bg-slate-50 p-8">
+      
+      {/* Page Title */}
+      <h1 className="text-2xl font-semibold text-slate-900 mb-6">
+        Dashboard
+      </h1>
 
-      <nav className="flex-1 p-4 space-y-2">
-        {menuItems.map((item) => {
-          const Icon = item.icon
-          return (
-            <button
-              key={item.id}
-              onClick={() => setActiveItem(item.id)}
-              className={`w-full flex items-center gap-4 px-4 py-3 rounded-lg transition-colors ${
-                activeItem === item.id ? "bg-slate-200 text-slate-900" : "text-slate-700 hover:bg-slate-150"
-              } ${isCollapsed ? "justify-center" : ""}`}
-            >
-              <Icon className="w-5 h-5 flex-shrink-0" />
-              {!isCollapsed && <span className="text-sm font-medium">{item.label}</span>}
-            </button>
-          )
-        })}
-      </nav>
-
-      <div className="p-4 border-t border-slate-200">
-        <button
-          onClick={() => setIsCollapsed(!isCollapsed)}
-          className="w-full flex items-center justify-center p-2 hover:bg-slate-200 rounded-lg transition-colors"
-        >
-          {isCollapsed ? (
-            <ChevronRight className="w-5 h-5 text-slate-700" />
-          ) : (
-            <ChevronLeft className="w-5 h-5 text-slate-700" />
-          )}
+      {/* Actions */}
+      <div className="flex items-center gap-4 mb-6">
+        <button className="px-4 py-2 border-2 border-slate-300 rounded-lg text-slate-700 font-medium hover:bg-slate-100 transition-colors flex items-center gap-2">
+          <Plus className="w-4 h-4" />
+          New
         </button>
-      </div>
-    </div>
-  )
-}
 
-// Header Component
-const Header = ({ currentPage, userName = "John Doe", userInitial = "JD" }) => {
-  return (
-    <header className="bg-white border-b border-slate-200 px-8 py-4 flex items-center justify-between">
-      <h1 className="text-2xl font-semibold text-slate-900">{currentPage}</h1>
-
-      <div className="flex items-center gap-6">
-        <div className="flex items-center gap-3 bg-slate-50 px-4 py-2 rounded-lg border border-slate-200 flex-1 max-w-xs">
+        <div className="flex items-center gap-3 bg-white px-4 py-2 rounded-lg border border-slate-200 flex-1 max-w-md">
           <Search className="w-5 h-5 text-slate-500" />
           <input
             type="text"
             placeholder="Search..."
+            value={searchTerm}
+            onChange={(e) => setSearchTerm(e.target.value)}
             className="bg-transparent outline-none text-sm text-slate-700 placeholder-slate-500 flex-1"
           />
         </div>
 
-        <button className="relative p-2 hover:bg-slate-100 rounded-lg transition-colors">
-          <Bell className="w-5 h-5 text-slate-700" />
-          <span className="absolute top-1 right-1 w-2 h-2 bg-red-500 rounded-full"></span>
-        </button>
-
-        <button className="flex items-center gap-3 px-3 py-2 hover:bg-slate-100 rounded-lg transition-colors border border-slate-200">
-          <div className="w-8 h-8 bg-purple-700 rounded-full flex items-center justify-center text-white text-sm font-semibold">
-            {userInitial}
-          </div>
-          <div className="flex items-center gap-2 text-sm">
-            <span className="font-medium text-slate-900">{userName}</span>
-            <ChevronDown className="w-4 h-4 text-slate-600" />
-          </div>
+        <button className="px-4 py-2 bg-slate-200 rounded-lg text-slate-700 font-medium hover:bg-slate-300 transition-colors">
+          Filter
         </button>
       </div>
-    </header>
-  )
-}
 
-// Equipment Component
-const Equipment = () => {
-  const [searchTerm, setSearchTerm] = useState("")
+      {/* Metric Cards */}
+      <div className="grid grid-cols-1 md:grid-cols-3 gap-6 mb-8">
 
-  const equipmentData = [
-    {
-      id: 1,
-      name: "Assembly Robot A",
-      category: "Assembly",
-      team: "Team Delta",
-      technician: "Sarah Chen",
-      location: "Building A, Floor 1",
-      status: "Repaired",
-      maintenance: "—",
-    },
-    {
-      id: 2,
-      name: "CNC Machine #12",
-      category: "Machining",
-      team: "Team Alpha",
-      technician: "Sarah Chen",
-      location: "Building A, Floor 2",
-      status: "In Progress",
-      maintenance: "3",
-    },
-    {
-      id: 3,
-      name: "Conveyor Belt A",
-      category: "Transport",
-      team: "Team Gamma",
-      technician: "Tom Brown",
-      location: "Warehouse",
-      status: "New",
-      maintenance: "2",
-    },
-    {
-      id: 4,
-      name: "Forklift #7",
-      category: "Transport",
-      team: "Team Alpha",
-      technician: "Emma Wilson",
-      location: "Warehouse",
-      status: "Overdue",
-      maintenance: "5",
-    },
-    {
-      id: 5,
-      name: "Hydraulic Press #3",
-      category: "Pressing",
-      team: "Team Beta",
-      technician: "Mike Johnson",
-      location: "Building B, Floor 1",
-      status: "Repaired",
-      maintenance: "1",
-    },
-    {
-      id: 6,
-      name: "Welding Station #2",
-      category: "Welding",
-      team: "Team Beta",
-      technician: "Mike Johnson",
-      location: "Building C, Floor 1",
-      status: "In Progress",
-      maintenance: "2",
-    },
-  ]
-
-  const getStatusColor = (status) => {
-    switch (status) {
-      case "Repaired":
-        return "text-emerald-600 bg-emerald-50"
-      case "In Progress":
-        return "text-blue-600 bg-blue-50"
-      case "New":
-        return "text-gray-600 bg-gray-50"
-      case "Overdue":
-        return "text-red-600 bg-red-50"
-      default:
-        return "text-gray-600 bg-gray-50"
-    }
-  }
-
-  return (
-    <div className="p-8">
-      <div className="mb-8">
-        <h2 className="text-2xl font-semibold text-slate-900 mb-6">Equipment</h2>
-
-        <div className="flex items-center gap-4 mb-6">
-          <div className="flex items-center gap-3 bg-white px-4 py-2 rounded-lg border border-slate-200 flex-1 max-w-md">
-            <Search className="w-5 h-5 text-slate-500" />
-            <input
-              type="text"
-              placeholder="Search equipment..."
-              value={searchTerm}
-              onChange={(e) => setSearchTerm(e.target.value)}
-              className="bg-transparent outline-none text-sm text-slate-700 placeholder-slate-500 flex-1"
-            />
+        <div className="bg-red-50 border-2 border-red-200 rounded-lg p-6">
+          <div className="flex items-start gap-4">
+            <div className="p-3 bg-red-100 rounded-lg">
+              <AlertTriangle className="w-6 h-6 text-red-600" />
+            </div>
+            <div>
+              <p className="text-sm font-medium text-red-900">Critical Equipment</p>
+              <p className="text-3xl font-bold text-red-600 mt-2">5 Units</p>
+              <p className="text-sm text-red-700 mt-1">(Health &lt; 30%)</p>
+            </div>
           </div>
-
-          <button className="flex items-center gap-2 px-4 py-2 border border-slate-200 rounded-lg hover:bg-slate-50 transition-colors">
-            <Filter className="w-5 h-5 text-slate-700" />
-            <span className="text-sm font-medium text-slate-700">All Categories</span>
-          </button>
-
-          <button className="flex items-center gap-2 px-4 py-2 bg-purple-700 text-white rounded-lg hover:bg-purple-800 transition-colors ml-auto">
-            <Plus className="w-5 h-5" />
-            <span className="text-sm font-medium">Add Equipment</span>
-          </button>
         </div>
+
+        <div className="bg-blue-50 border-2 border-blue-200 rounded-lg p-6">
+          <div className="flex items-start gap-4">
+            <div className="p-3 bg-blue-100 rounded-lg">
+              <TrendingUp className="w-6 h-6 text-blue-600" />
+            </div>
+            <div>
+              <p className="text-sm font-medium text-blue-900">Technician Load</p>
+              <p className="text-3xl font-bold text-blue-600 mt-2">85% Utilized</p>
+              <p className="text-sm text-blue-700 mt-1">(Assign Carefully)</p>
+            </div>
+          </div>
+        </div>
+
+        <div className="bg-green-50 border-2 border-green-200 rounded-lg p-6">
+          <div className="flex items-start gap-4">
+            <div className="p-3 bg-green-100 rounded-lg">
+              <Clock className="w-6 h-6 text-green-600" />
+            </div>
+            <div>
+              <p className="text-sm font-medium text-green-900">Open Requests</p>
+              <p className="text-3xl font-bold text-green-600 mt-2">12 Pending</p>
+              <p className="text-sm text-green-700 mt-1">3 Overdue</p>
+            </div>
+          </div>
+        </div>
+
       </div>
 
-      <div className="overflow-x-auto rounded-lg border border-slate-200">
+      {/* Maintenance Table */}
+      <h3 className="text-lg font-semibold text-slate-900 mb-4">
+        Maintenance Activity
+      </h3>
+
+      <div className="bg-white rounded-lg border border-slate-200 overflow-hidden">
         <table className="w-full">
           <thead>
             <tr className="bg-slate-50 border-b border-slate-200">
-              <th className="px-6 py-4 text-left text-sm font-semibold text-slate-900">EQUIPMENT NAME</th>
-              <th className="px-6 py-4 text-left text-sm font-semibold text-slate-900">CATEGORY</th>
-              <th className="px-6 py-4 text-left text-sm font-semibold text-slate-900">ASSIGNED TEAM</th>
-              <th className="px-6 py-4 text-left text-sm font-semibold text-slate-900">ASSIGNED TECHNICIAN</th>
-              <th className="px-6 py-4 text-left text-sm font-semibold text-slate-900">LOCATION</th>
-              <th className="px-6 py-4 text-left text-sm font-semibold text-slate-900">STATUS</th>
-              <th className="px-6 py-4 text-left text-sm font-semibold text-slate-900">MAINTENANCE</th>
+              <th className="px-6 py-4 text-left text-sm font-semibold">Subject</th>
+              <th className="px-6 py-4 text-left text-sm font-semibold">Employee</th>
+              <th className="px-6 py-4 text-left text-sm font-semibold">Technician</th>
+              <th className="px-6 py-4 text-left text-sm font-semibold">Category</th>
+              <th className="px-6 py-4 text-left text-sm font-semibold">Stage</th>
+              <th className="px-6 py-4 text-left text-sm font-semibold">Comments</th>
             </tr>
           </thead>
           <tbody>
-            {equipmentData.map((item) => (
-              <tr key={item.id} className="border-b border-slate-200 hover:bg-slate-50 transition-colors">
-                <td className="px-6 py-4 text-sm font-medium text-slate-900">{item.name}</td>
-                <td className="px-6 py-4 text-sm text-slate-600">{item.category}</td>
-                <td className="px-6 py-4 text-sm text-slate-600">{item.team}</td>
+            {maintenanceData.map((item) => (
+              <tr key={item.id} className="border-b hover:bg-slate-50">
+                <td className="px-6 py-4 text-sm font-medium">{item.subject}</td>
+                <td className="px-6 py-4 text-sm text-slate-600">{item.employee}</td>
                 <td className="px-6 py-4 text-sm text-slate-600">{item.technician}</td>
-                <td className="px-6 py-4 text-sm text-slate-600">{item.location}</td>
-                <td className="px-6 py-4">
-                  <span className={`px-3 py-1 rounded-full text-sm font-medium ${getStatusColor(item.status)}`}>
-                    {item.status}
-                  </span>
-                </td>
-                <td className="px-6 py-4 text-sm text-slate-600">{item.maintenance}</td>
+                <td className="px-6 py-4 text-sm text-slate-600">{item.category}</td>
+                <td className="px-6 py-4 text-sm text-slate-600">{item.stage}</td>
+                <td className="px-6 py-4 text-sm text-slate-600">{item.comments}</td>
               </tr>
             ))}
           </tbody>
         </table>
       </div>
-    </div>
-  )
-}
 
-// Main Layout Component
-export default function DashboardContent() {
-  const [isCollapsed, setIsCollapsed] = useState(false)
-
-  return (
-    <div className="flex h-screen bg-white">
-      <Sidebar isCollapsed={isCollapsed} setIsCollapsed={setIsCollapsed} />
-      <div className="flex-1 flex flex-col overflow-hidden">
-        <Header currentPage="Equipment" />
-        <main className="flex-1 overflow-auto bg-white">
-          <Equipment />
-        </main>
-      </div>
     </div>
   )
 }
