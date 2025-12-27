@@ -1,19 +1,43 @@
-import { useState } from 'react'
-import './App.css'
-import { BrowserRouter as Router, Routes, Route } from "react-router-dom";
-import routes from './routes/routes';
+// src/App.jsx
+import { BrowserRouter as Router, Routes, Route, Navigate } from "react-router-dom";
+import { AuthProvider } from './context/AuthContext';
+import Login from './pages/Login';
+import Register from './pages/Register';
+import Layout from './layout/layout';
+import Dashboard from './pages/Dashboard';
+import Equipment from './pages/Equipments';
+import Profile from './pages/Profile';
+import ProtectedRoute from "./routes/ProtectedRoutes";
+import './App.css';
 
 function App() {
-
   return (
-    <Router>
-      <Routes>
-        {/* Routes will be defined here */}
-        {routes}
-      </Routes>
-
-    </Router>
-  )
+    <AuthProvider>
+      <Router>
+        <Routes>
+          {/* Public routes */}
+          <Route path="/login" element={<Login />} />
+          <Route path="/register" element={<Register />} />
+          
+          {/* Protected routes with layout */}
+          <Route path="/" element={
+            <ProtectedRoute>
+              <Layout />
+            </ProtectedRoute>
+          }>
+            <Route index element={<Navigate to="/dashboard" replace />} />
+            <Route path="dashboard" element={<Dashboard />} />
+            <Route path="equipment" element={<Equipment />} />
+            <Route path="profile" element={<Profile />} />
+            {/* Add more protected routes here */}
+          </Route>
+          
+          {/* Catch all route */}
+          <Route path="*" element={<Navigate to="/dashboard" replace />} />
+        </Routes>
+      </Router>
+    </AuthProvider>
+  );
 }
 
-export default App
+export default App;
