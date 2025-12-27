@@ -1,116 +1,11 @@
 "use client"
 
 import { useState } from "react"
-import {
-  Settings,
-  ClipboardList,
-  Users,
-  Calendar,
-  BarChart3,
-  ChevronLeft,
-  ChevronRight,
-  Search,
-  Filter,
-  Plus,
-  Bell,
-  ChevronDown,
-} from "lucide-react"
+import { Search, Filter, Plus } from "lucide-react"
 
-// Sidebar Component
-const Sidebar = ({ isCollapsed, setIsCollapsed }) => {
-  const [activeItem, setActiveItem] = useState("Equipment")
-
-  const menuItems = [
-    { icon: Settings, label: "Equipment", id: "Equipment" },
-    { icon: ClipboardList, label: "Maintenance Requests", id: "MaintenanceRequests" },
-    { icon: Users, label: "Maintenance Teams", id: "MaintenanceTeams" },
-    { icon: Calendar, label: "Calendar", id: "Calendar" },
-    { icon: BarChart3, label: "Reports", id: "Reports" },
-  ]
-
-  return (
-    <div
-      className={`${isCollapsed ? "w-20" : "w-64"} bg-slate-100 h-screen border-r border-slate-200 transition-all duration-300 flex flex-col`}
-    >
-      <div className={`flex items-center gap-3 p-6 border-b border-slate-200 ${isCollapsed ? "justify-center" : ""}`}>
-        <div className="w-10 h-10 bg-purple-700 rounded flex items-center justify-center">
-          <Settings className="w-6 h-6 text-white" />
-        </div>
-        {!isCollapsed && <span className="text-xl font-bold text-slate-900">GearGuard</span>}
-      </div>
-
-      <nav className="flex-1 p-4 space-y-2">
-        {menuItems.map((item) => {
-          const Icon = item.icon
-          return (
-            <button
-              key={item.id}
-              onClick={() => setActiveItem(item.id)}
-              className={`w-full flex items-center gap-4 px-4 py-3 rounded-lg transition-colors ${
-                activeItem === item.id ? "bg-slate-200 text-slate-900" : "text-slate-700 hover:bg-slate-150"
-              } ${isCollapsed ? "justify-center" : ""}`}
-            >
-              <Icon className="w-5 h-5 flex-shrink-0" />
-              {!isCollapsed && <span className="text-sm font-medium">{item.label}</span>}
-            </button>
-          )
-        })}
-      </nav>
-
-      <div className="p-4 border-t border-slate-200">
-        <button
-          onClick={() => setIsCollapsed(!isCollapsed)}
-          className="w-full flex items-center justify-center p-2 hover:bg-slate-200 rounded-lg transition-colors"
-        >
-          {isCollapsed ? (
-            <ChevronRight className="w-5 h-5 text-slate-700" />
-          ) : (
-            <ChevronLeft className="w-5 h-5 text-slate-700" />
-          )}
-        </button>
-      </div>
-    </div>
-  )
-}
-
-// Header Component
-const Header = ({ currentPage, userName = "John Doe", userInitial = "JD" }) => {
-  return (
-    <header className="bg-white border-b border-slate-200 px-8 py-4 flex items-center justify-between">
-      <h1 className="text-2xl font-semibold text-slate-900">{currentPage}</h1>
-
-      <div className="flex items-center gap-6">
-        <div className="flex items-center gap-3 bg-slate-50 px-4 py-2 rounded-lg border border-slate-200 flex-1 max-w-xs">
-          <Search className="w-5 h-5 text-slate-500" />
-          <input
-            type="text"
-            placeholder="Search..."
-            className="bg-transparent outline-none text-sm text-slate-700 placeholder-slate-500 flex-1"
-          />
-        </div>
-
-        <button className="relative p-2 hover:bg-slate-100 rounded-lg transition-colors">
-          <Bell className="w-5 h-5 text-slate-700" />
-          <span className="absolute top-1 right-1 w-2 h-2 bg-red-500 rounded-full"></span>
-        </button>
-
-        <button className="flex items-center gap-3 px-3 py-2 hover:bg-slate-100 rounded-lg transition-colors border border-slate-200">
-          <div className="w-8 h-8 bg-purple-700 rounded-full flex items-center justify-center text-white text-sm font-semibold">
-            {userInitial}
-          </div>
-          <div className="flex items-center gap-2 text-sm">
-            <span className="font-medium text-slate-900">{userName}</span>
-            <ChevronDown className="w-4 h-4 text-slate-600" />
-          </div>
-        </button>
-      </div>
-    </header>
-  )
-}
-
-// Equipment Component
 const Equipment = () => {
   const [searchTerm, setSearchTerm] = useState("")
+  const [selectedCategory, setSelectedCategory] = useState("All Categories")
 
   const equipmentData = [
     {
@@ -192,10 +87,13 @@ const Equipment = () => {
 
   return (
     <div className="p-8">
+      {/* Page Header */}
       <div className="mb-8">
         <h2 className="text-2xl font-semibold text-slate-900 mb-6">Equipment</h2>
 
+        {/* Controls */}
         <div className="flex items-center gap-4 mb-6">
+          {/* Search */}
           <div className="flex items-center gap-3 bg-white px-4 py-2 rounded-lg border border-slate-200 flex-1 max-w-md">
             <Search className="w-5 h-5 text-slate-500" />
             <input
@@ -207,11 +105,13 @@ const Equipment = () => {
             />
           </div>
 
+          {/* Filter Dropdown */}
           <button className="flex items-center gap-2 px-4 py-2 border border-slate-200 rounded-lg hover:bg-slate-50 transition-colors">
             <Filter className="w-5 h-5 text-slate-700" />
-            <span className="text-sm font-medium text-slate-700">All Categories</span>
+            <span className="text-sm font-medium text-slate-700">{selectedCategory}</span>
           </button>
 
+          {/* Add Equipment Button */}
           <button className="flex items-center gap-2 px-4 py-2 bg-purple-700 text-white rounded-lg hover:bg-purple-800 transition-colors ml-auto">
             <Plus className="w-5 h-5" />
             <span className="text-sm font-medium">Add Equipment</span>
@@ -219,6 +119,7 @@ const Equipment = () => {
         </div>
       </div>
 
+      {/* Table */}
       <div className="overflow-x-auto rounded-lg border border-slate-200">
         <table className="w-full">
           <thead>
@@ -255,19 +156,4 @@ const Equipment = () => {
   )
 }
 
-// Main Layout Component
-export default function DashboardContent() {
-  const [isCollapsed, setIsCollapsed] = useState(false)
-
-  return (
-    <div className="flex h-screen bg-white">
-      <Sidebar isCollapsed={isCollapsed} setIsCollapsed={setIsCollapsed} />
-      <div className="flex-1 flex flex-col overflow-hidden">
-        <Header currentPage="Equipment" />
-        <main className="flex-1 overflow-auto bg-white">
-          <Equipment />
-        </main>
-      </div>
-    </div>
-  )
-}
+export default Equipment
