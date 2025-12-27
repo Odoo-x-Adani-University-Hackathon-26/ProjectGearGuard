@@ -19,17 +19,24 @@ const equipmentSchema = new Schema(
     owner: {
       type: Schema.Types.ObjectId,
       ref: "User",
+      default: null // Make it optional
     },
+    
     maintenanceTeam: {
       type: Schema.Types.ObjectId,
       ref: "MaintenanceTeam",
+      default: null // Make it optional
     },
+    
     defaultTechnician: {
       type: Schema.Types.ObjectId,
       ref: "User",
+      default: null // Make it optional
     },
+    
     location: {
       type: String,
+      default: null // Make it optional
     },
     specifications: {
       type: Map,

@@ -3,7 +3,6 @@ const Department = require('../models/Department');
 const MaintenanceTeam = require('../models/MaintenanceTeam');
 const User = require('../models/User');
 const MaintenanceRequest = require('../models/MaintenanceRequest');
-
 // @desc    Create new equipment
 // @route   POST /api/equipment
 // @access  Private (Admin, Manager)
@@ -41,7 +40,7 @@ exports.createEquipment = async (req, res) => {
     }
 
     // Check if serial number is unique
-    if (serialNumber) {
+    if (serialNumber && serialNumber.trim() !== '') {
       const existingEquipment = await Equipment.findOne({ serialNumber });
       if (existingEquipment) {
         return res.status(400).json({
@@ -51,9 +50,26 @@ exports.createEquipment = async (req, res) => {
       }
     }
 
+    // Prepare equipment data
+    const equipmentData = {
+      name,
+      serialNumber: serialNumber && serialNumber.trim() !== '' ? serialNumber : undefined,
+      department,
+      status: status || 'active'
+    };
+
+    // Add optional fields only if they have values
+    if (owner && owner.trim() !== '') equipmentData.owner = owner;
+    if (maintenanceTeam && maintenanceTeam.trim() !== '') equipmentData.maintenanceTeam = maintenanceTeam;
+    if (defaultTechnician && defaultTechnician.trim() !== '') equipmentData.defaultTechnician = defaultTechnician;
+    if (location && location.trim() !== '') equipmentData.location = location;
+    if (specifications && Object.keys(specifications).length > 0) equipmentData.specifications = specifications;
+    if (purchaseDate) equipmentData.purchaseDate = purchaseDate;
+    if (warrantyEndDate) equipmentData.warrantyEndDate = warrantyEndDate;
+
     // Validate maintenance team if provided
-    if (maintenanceTeam) {
-      const teamExists = await MaintenanceTeam.findById(maintenanceTeam);
+    if (equipmentData.maintenanceTeam) {
+      const teamExists = await MaintenanceTeam.findById(equipmentData.maintenanceTeam);
       if (!teamExists) {
         return res.status(404).json({
           success: false,
@@ -63,8 +79,8 @@ exports.createEquipment = async (req, res) => {
     }
 
     // Validate default technician if provided
-    if (defaultTechnician) {
-      const technicianExists = await User.findById(defaultTechnician);
+    if (equipmentData.defaultTechnician) {
+      const technicianExists = await User.findById(equipmentData.defaultTechnician);
       if (!technicianExists || !['technician', 'admin'].includes(technicianExists.role)) {
         return res.status(400).json({
           success: false,
@@ -73,20 +89,19 @@ exports.createEquipment = async (req, res) => {
       }
     }
 
+    // Validate owner if provided
+    if (equipmentData.owner) {
+      const ownerExists = await User.findById(equipmentData.owner);
+      if (!ownerExists) {
+        return res.status(400).json({
+          success: false,
+          message: 'Owner not found'
+        });
+      }
+    }
+
     // Create equipment
-    const equipment = await Equipment.create({
-      name,
-      serialNumber,
-      department,
-      owner,
-      maintenanceTeam,
-      defaultTechnician,
-      location,
-      specifications,
-      purchaseDate,
-      warrantyEndDate,
-      status: status || 'active'
-    });
+    const equipment = await Equipment.create(equipmentData);
 
     // Populate related fields
     const populatedEquipment = await Equipment.findById(equipment._id)
@@ -106,6 +121,14 @@ exports.createEquipment = async (req, res) => {
       return res.status(400).json({
         success: false,
         message: 'Serial number must be unique'
+      });
+    }
+    
+    if (error.name === 'ValidationError') {
+      const messages = Object.values(error.errors).map(val => val.message);
+      return res.status(400).json({
+        success: false,
+        message: messages.join(', ')
       });
     }
     
