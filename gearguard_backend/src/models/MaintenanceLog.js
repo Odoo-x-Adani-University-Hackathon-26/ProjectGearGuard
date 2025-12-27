@@ -1,42 +1,50 @@
-// models/MaintenanceLog.js
-const { DataTypes } = require('sequelize');
+const mongoose = require("mongoose");
+const Schema = mongoose.Schema;
 
-module.exports = (sequelize) => {
-  const MaintenanceLog = sequelize.define('MaintenanceLog', {
-    id: {
-      type: DataTypes.INTEGER,
-      primaryKey: true,
-      autoIncrement: true
+const maintenanceLogSchema = new Schema(
+  {
+    maintenanceRequest: {
+      type: Schema.Types.ObjectId,
+      ref: "MaintenanceRequest",
+      required: true,
     },
-    maintenanceRequestId: {
-      type: DataTypes.INTEGER,
-      allowNull: false,
-      field: 'maintenance_request_id'
+    technician: {
+      type: Schema.Types.ObjectId,
+      ref: "User",
+      required: true,
     },
-    technicianId: {
-      type: DataTypes.INTEGER,
-      allowNull: false,
-      field: 'technician_id'
+    action: {
+      type: String,
+      enum: [
+        "assigned",
+        "started",
+        "completed",
+        "note_added",
+        "status_changed",
+      ],
+      required: true,
     },
     note: {
-      type: DataTypes.TEXT,
-      allowNull: true
+      type: String,
     },
     hoursSpent: {
-      type: DataTypes.DECIMAL(5, 2),
-      allowNull: true,
-      field: 'hours_spent'
+      type: Number,
+      min: 0,
     },
-    createdAt: {
-      type: DataTypes.DATE,
-      defaultValue: DataTypes.NOW,
-      field: 'created_at'
-    }
-  }, {
-    tableName: 'maintenance_logs',
-    timestamps: false,
-    underscored: true
-  });
+    previousStatus: {
+      type: String,
+    },
+    newStatus: {
+      type: String,
+    },
+    metadata: {
+      type: Map,
+      of: Schema.Types.Mixed,
+    },
+  },
+  {
+    timestamps: true,
+  }
+);
 
-  return MaintenanceLog;
-};
+module.exports = mongoose.model("MaintenanceLog", maintenanceLogSchema);

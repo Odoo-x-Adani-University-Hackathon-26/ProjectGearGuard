@@ -17,93 +17,107 @@ export const AuthProvider = ({ children }) => {
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState(null);
 
-  // Use useCallback to prevent infinite re-renders
-  const checkUser = useCallback(async () => {
-    try {
-      console.log('🔄 Checking authentication on refresh...');
-      
-      // Check if token exists in localStorage
-      const token = localStorage.getItem('token');
-      const storedUser = localStorage.getItem('user');
-      
-      console.log('🔑 Token exists:', !!token);
-      console.log('👤 Stored user exists:', !!storedUser);
-      
-      if (token && storedUser) {
-        try {
-          // Immediately set user from localStorage to prevent redirect
+  // src/context/AuthContext.jsx - Fixed checkUser function
+const checkUser = useCallback(async () => {
+  try {
+    console.log('🔄 Checking authentication on refresh...');
+    
+    // Check if token exists in localStorage
+    const token = localStorage.getItem('token');
+    const storedUser = localStorage.getItem('user');
+    
+    console.log('🔑 Token exists:', !!token);
+    console.log('👤 Stored user exists:', !!storedUser);
+    
+    if (token) {
+      try {
+        // If we have a stored user, use it immediately
+        if (storedUser) {
           const parsedUser = JSON.parse(storedUser);
           console.log('📦 Setting user from localStorage:', parsedUser.email);
           setUser(parsedUser);
-          
-          // Then try to fetch fresh data from backend in background
-          console.log('🔄 Fetching fresh user data from backend...');
-          const freshUserData = await authService.getCurrentUser();
-          console.log('✅ Fresh user data:', freshUserData);
-          
-          // Update with fresh data
-          if (freshUserData?.data) {
-            setUser(freshUserData.data);
-            localStorage.setItem('user', JSON.stringify(freshUserData.data));
-          }
-        } catch (fetchError) {
-          console.error('❌ Failed to fetch fresh user data:', fetchError);
-          // Keep using localStorage data even if fetch fails
-          // Don't clear localStorage here to prevent logout on network errors
         }
-      } else {
-        console.log('❌ No authentication tokens found in localStorage');
-        setUser(null);
+        
+        // Then try to fetch fresh data from backend in background
+        console.log('🔄 Fetching fresh user data from backend...');
+        const response = await authService.getCurrentUser();
+        console.log('✅ Fresh user data response:', response);
+        
+        // Update with fresh data
+        if (response?.success && response?.data) {
+          console.log('✅ Setting fresh user data:', response.data.email);
+          setUser(response.data);
+          // Store both token and user data
+          localStorage.setItem('user', JSON.stringify(response.data));
+        }
+      } catch (fetchError) {
+        console.error('❌ Failed to fetch fresh user data:', fetchError);
+        // If fetch fails but we have token, keep using localStorage data
+        // Only clear if it's a 401 unauthorized error
+        if (fetchError.response?.status === 401) {
+          console.log('🔒 Token invalid, clearing storage');
+          localStorage.removeItem('token');
+          localStorage.removeItem('user');
+          setUser(null);
+        }
       }
-    } catch (error) {
-      console.error('❌ Error in checkUser:', error);
+    } else {
+      console.log('❌ No token found in localStorage');
+      localStorage.removeItem('user');
       setUser(null);
-    } finally {
-      console.log('✅ Auth check complete, loading false');
-      setLoading(false);
     }
-  }, []);
+  } catch (error) {
+    console.error('❌ Error in checkUser:', error);
+    localStorage.removeItem('token');
+    localStorage.removeItem('user');
+    setUser(null);
+  } finally {
+    console.log('✅ Auth check complete, loading false');
+    setLoading(false);
+  }
+}, []);
 
   useEffect(() => {
     console.log('🚀 AuthProvider mounted');
     checkUser();
   }, [checkUser]);
 
-  const login = async (email, password) => {
-    try {
-      setError(null);
-      setLoading(true);
-      console.log('🔐 Attempting login for:', email);
-      
-      const response = await authService.login({ email, password });
-      console.log('✅ Login response:', response);
-      
-      // Extract user data
-      let userData = null;
-      if (response.data) {
-        userData = response.data;
-      } else if (response.user) {
-        userData = response.user;
-      } else {
-        userData = response;
-      }
-      
-      console.log('📦 Setting user after login:', userData.email);
-      setUser(userData);
-      setLoading(false);
-      
-      return { 
-        success: true, 
-        data: response,
-        user: userData
-      };
-    } catch (error) {
-      console.error('❌ Login failed:', error);
-      setError(error.message || 'Login failed');
-      setLoading(false);
-      return { success: false, error: error.message };
+  // src/context/AuthContext.jsx - Update login function
+const login = async (email, password) => {
+  try {
+    setError(null);
+    setLoading(true);
+    console.log('🔐 Attempting login for:', email);
+    
+    const response = await authService.login({ email, password });
+    console.log('✅ Login response:', response);
+    
+    // Extract user data
+    let userData = null;
+    if (response?.data) {
+      userData = response.data; // This should contain token and user info
+    } else if (response) {
+      userData = response;
     }
-  };
+    
+    console.log('📦 Setting user after login:', userData?.email);
+    console.log('🔑 Token stored:', !!localStorage.getItem('token'));
+    
+    setUser(userData);
+    setLoading(false);
+    
+    return { 
+      success: true, 
+      data: response,
+      user: userData
+    };
+  } catch (error) {
+    console.error('❌ Login failed:', error);
+    setError(error.message || 'Login failed');
+    setLoading(false);
+    return { success: false, error: error.message };
+  }
+};
 
   const register = async (userData) => {
     try {

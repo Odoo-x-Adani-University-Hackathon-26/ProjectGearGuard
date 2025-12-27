@@ -1,70 +1,67 @@
-// models/Equipment.js
-const { DataTypes } = require('sequelize');
+const mongoose = require("mongoose");
+const Schema = mongoose.Schema;
 
-module.exports = (sequelize) => {
-  const Equipment = sequelize.define('Equipment', {
-    id: {
-      type: DataTypes.INTEGER,
-      primaryKey: true,
-      autoIncrement: true
-    },
+const equipmentSchema = new Schema(
+  {
     name: {
-      type: DataTypes.STRING(150),
-      allowNull: false
+      type: String,
+      required: true,
     },
     serialNumber: {
-      type: DataTypes.STRING(100),
+      type: String,
       unique: true,
-      field: 'serial_number'
+      sparse: true,
     },
-    departmentId: {
-      type: DataTypes.INTEGER,
-      allowNull: true,
-      field: 'department_id'
+    department: {
+      type: Schema.Types.ObjectId,
+      ref: "Department",
     },
-    ownerId: {
-      type: DataTypes.INTEGER,
-      allowNull: true,
-      field: 'owner_id'
+    owner: {
+      type: Schema.Types.ObjectId,
+      ref: "User",
     },
-    maintenanceTeamId: {
-      type: DataTypes.INTEGER,
-      allowNull: true,
-      field: 'maintenance_team_id'
+    maintenanceTeam: {
+      type: Schema.Types.ObjectId,
+      ref: "MaintenanceTeam",
     },
-    defaultTechnicianId: {
-      type: DataTypes.INTEGER,
-      allowNull: true,
-      field: 'default_technician_id'
+    defaultTechnician: {
+      type: Schema.Types.ObjectId,
+      ref: "User",
     },
     location: {
-      type: DataTypes.STRING(150),
-      allowNull: true
+      type: String,
+    },
+    specifications: {
+      type: Map,
+      of: Schema.Types.Mixed,
     },
     purchaseDate: {
-      type: DataTypes.DATEONLY,
-      allowNull: true,
-      field: 'purchase_date'
+      type: Date,
     },
     warrantyEndDate: {
-      type: DataTypes.DATEONLY,
-      allowNull: true,
-      field: 'warranty_end_date'
+      type: Date,
     },
     status: {
-      type: DataTypes.ENUM('active', 'scrapped'),
-      defaultValue: 'active'
+      type: String,
+      enum: ["active", "inactive", "under_maintenance", "scrapped"],
+      default: "active",
     },
-    createdAt: {
-      type: DataTypes.DATE,
-      defaultValue: DataTypes.NOW,
-      field: 'created_at'
-    }
-  }, {
-    tableName: 'equipment',
-    timestamps: false,
-    underscored: true
-  });
+    lastMaintenanceDate: {
+      type: Date,
+    },
+    nextMaintenanceDate: {
+      type: Date,
+    },
+    maintenanceHistory: [
+      {
+        type: Schema.Types.ObjectId,
+        ref: "MaintenanceRequest",
+      },
+    ],
+  },
+  {
+    timestamps: true,
+  }
+);
 
-  return Equipment;
-};
+module.exports = mongoose.model("Equipment", equipmentSchema);

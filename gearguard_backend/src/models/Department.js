@@ -1,21 +1,24 @@
-// models/Department.js
-const { DataTypes } = require('sequelize');
+const mongoose = require("mongoose");
+const Schema = mongoose.Schema;
 
-module.exports = (sequelize) => {
-  const Department = sequelize.define('Department', {
-    id: {
-      type: DataTypes.INTEGER,
-      primaryKey: true,
-      autoIncrement: true
-    },
+const departmentSchema = new Schema(
+  {
     name: {
-      type: DataTypes.STRING(100),
-      allowNull: false
-    }
-  }, {
-    tableName: 'departments',
-    timestamps: false
-  });
+      type: String,
+      required: true,
+      unique: true,
+    },
+    description: {
+      type: String,
+    },
+    manager: {
+      type: Schema.Types.ObjectId,
+      ref: "User",
+    },
+  },
+  {
+    timestamps: true,
+  }
+);
 
-  return Department;
-};
+module.exports = mongoose.model("Department", departmentSchema);

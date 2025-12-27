@@ -15,25 +15,34 @@ const authService = {
     }
   },
 
-  // Login user
-  login: async (credentials) => {
-    try {
-      console.log('📤 Sending login request:', credentials.email);
-      const response = await axios.post('/auth/login', credentials);
-      console.log('✅ Login API response:', response.data);
-      
-      // Store token and user data
-      if (response.data.token) {
-        localStorage.setItem('token', response.data.token);
-        localStorage.setItem('user', JSON.stringify(response.data));
-      }
-      
-      return response.data;
-    } catch (error) {
-      console.error('❌ Login error:', error.response?.data || error.message);
-      throw error.response?.data || { message: 'Login failed' };
+  // src/services/authService.js - Fixed login function
+login: async (credentials) => {
+  try {
+    console.log('📤 Sending login request:', credentials.email);
+    const response = await axios.post('/auth/login', credentials);
+    console.log('✅ Login API response:', response.data);
+    
+    // Extract the token from response.data.data.token
+    const token = response.data?.data?.token || response.data?.token;
+    const userData = response.data?.data || response.data;
+    
+    console.log('🔑 Extracted token:', !!token);
+    console.log('👤 User data:', userData);
+    
+    if (token) {
+      localStorage.setItem('token', token);
+      localStorage.setItem('user', JSON.stringify(userData));
+      console.log('💾 Token and user saved to localStorage');
+    } else {
+      console.warn('⚠️ No token found in response');
     }
-  },
+    
+    return response.data;
+  } catch (error) {
+    console.error('❌ Login error:', error.response?.data || error.message);
+    throw error.response?.data || { message: 'Login failed' };
+  }
+},
 
   // Get current user
   getCurrentUser: async () => {
