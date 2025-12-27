@@ -68,6 +68,23 @@ const maintenanceRequestSchema = new Schema(
       ref: "User",
       required: true,
     },
+    scheduleType: {
+      type: String,
+      enum: ["one-time", "daily", "weekly", "monthly", "quarterly", "yearly"],
+      default: "one-time"
+    },
+    recurrencePattern: {
+      type: Map,
+      of: Schema.Types.Mixed,
+      default: {}
+    },
+    nextScheduledDate: {
+      type: Date,
+    },
+    isRecurring: {
+      type: Boolean,
+      default: false
+    },
     assignedAt: {
       type: Date,
     },

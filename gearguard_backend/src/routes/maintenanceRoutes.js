@@ -12,14 +12,35 @@ const {
   addNote,
   getMyRequests,
   getTeamRequests,
-  getRequestsStats
+  getRequestsStats,
 } = require('../controllers/maintanenceController');
+
+// Add these imports
+const {
+  getMaintenanceSchedule,
+  getUpcomingTasks,
+  scheduleMaintenance,
+  updateSchedule,
+  markAsCompleted,
+  getMaintenanceStats,
+  getOverdueTasks
+} = require('../controllers/calenderController');
 
 // Public routes (if any)
 
 // Protected routes
 router.use(protect);
 
+// ====== CALENDAR ROUTES FIRST (BEFORE PARAMETERIZED ROUTES) ======
+router.get('/calendar', getMaintenanceSchedule);
+router.get('/upcoming', getUpcomingTasks);
+router.get('/calendar/stats', getMaintenanceStats);
+router.get('/overdue', getOverdueTasks);
+router.post('/schedule', authorize('admin', 'manager'), scheduleMaintenance);
+router.put('/schedule/:id', authorize('admin', 'manager'), updateSchedule);
+router.put('/:id/complete', authorize('technician', 'admin', 'manager'), markAsCompleted);
+
+// ====== OTHER ROUTES ======
 // Employee routes
 router.post('/', authorize('employee', 'admin', 'manager'), createRequest);
 router.get('/my-requests', getMyRequests);
@@ -33,6 +54,7 @@ router.post('/:id/notes', authorize('technician', 'admin', 'manager'), addNote);
 
 // Admin/Manager routes
 router.get('/', authorize('admin', 'manager'), getAllRequests);
+// THIS MUST BE LAST - IT'S A CATCH-ALL FOR IDs
 router.get('/:id', getRequestById);
 router.put('/:id', authorize('admin', 'manager'), updateRequest);
 router.delete('/:id', authorize('admin'), deleteRequest);
