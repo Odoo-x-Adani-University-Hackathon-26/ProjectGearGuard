@@ -1,13 +1,21 @@
 <?php
-// Database Connection
-$host = "localhost";
-$user = "root";
-$pass = "";
-$dbname = "ProjectGearGuard";
 
-$conn = mysqli_connect($host, $user, $pass, $dbname);
+class Database {
+    private static $conn = null;
 
-if (!$conn) {
-    die("Database connection failed: " . mysqli_connect_error());
+    public static function connect() {
+        if (self::$conn === null) {
+            try {
+                self::$conn = new PDO(
+                    "mysql:host=localhost;dbname=gearguard;charset=utf8",
+                    "root",
+                    ""
+                );
+                self::$conn->setAttribute(PDO::ATTR_ERRMODE, PDO::ERRMODE_EXCEPTION);
+            } catch (PDOException $e) {
+                die("Database Connection Failed: " . $e->getMessage());
+            }
+        }
+        return self::$conn;
+    }
 }
-?>
