@@ -82,41 +82,42 @@ const checkUser = useCallback(async () => {
     checkUser();
   }, [checkUser]);
 
-  const login = async (email, password) => {
-    try {
-      setError(null);
-      setLoading(true);
-      console.log('🔐 Attempting login for:', email);
-      
-      const response = await authService.login({ email, password });
-      console.log('✅ Login response:', response);
-      
-      // Extract user data
-      let userData = null;
-      if (response.data) {
-        userData = response.data;
-      } else if (response.user) {
-        userData = response.user;
-      } else {
-        userData = response;
-      }
-      
-      console.log('📦 Setting user after login:', userData.email);
-      setUser(userData);
-      setLoading(false);
-      
-      return { 
-        success: true, 
-        data: response,
-        user: userData
-      };
-    } catch (error) {
-      console.error('❌ Login failed:', error);
-      setError(error.message || 'Login failed');
-      setLoading(false);
-      return { success: false, error: error.message };
+  // src/context/AuthContext.jsx - Update login function
+const login = async (email, password) => {
+  try {
+    setError(null);
+    setLoading(true);
+    console.log('🔐 Attempting login for:', email);
+    
+    const response = await authService.login({ email, password });
+    console.log('✅ Login response:', response);
+    
+    // Extract user data
+    let userData = null;
+    if (response?.data) {
+      userData = response.data; // This should contain token and user info
+    } else if (response) {
+      userData = response;
     }
-  };
+    
+    console.log('📦 Setting user after login:', userData?.email);
+    console.log('🔑 Token stored:', !!localStorage.getItem('token'));
+    
+    setUser(userData);
+    setLoading(false);
+    
+    return { 
+      success: true, 
+      data: response,
+      user: userData
+    };
+  } catch (error) {
+    console.error('❌ Login failed:', error);
+    setError(error.message || 'Login failed');
+    setLoading(false);
+    return { success: false, error: error.message };
+  }
+};
 
   const register = async (userData) => {
     try {
