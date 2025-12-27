@@ -1,79 +1,112 @@
-// models/MaintenanceRequest.js
-const { DataTypes } = require('sequelize');
-
-module.exports = (sequelize) => {
-  const MaintenanceRequest = sequelize.define('MaintenanceRequest', {
-    id: {
-      type: DataTypes.INTEGER,
-      primaryKey: true,
-      autoIncrement: true
-    },
+const maintenanceRequestSchema = new Schema(
+  {
     subject: {
-      type: DataTypes.STRING(255),
-      allowNull: false
+      type: String,
+      required: true,
     },
     description: {
-      type: DataTypes.TEXT,
-      allowNull: true
+      type: String,
+      required: true,
     },
-    equipmentId: {
-      type: DataTypes.INTEGER,
-      allowNull: false,
-      field: 'equipment_id'
+    equipment: {
+      type: Schema.Types.ObjectId,
+      ref: "Equipment",
+      required: true,
     },
-    teamId: {
-      type: DataTypes.INTEGER,
-      allowNull: false,
-      field: 'team_id'
+    team: {
+      type: Schema.Types.ObjectId,
+      ref: "MaintenanceTeam",
+      required: true,
     },
-    technicianId: {
-      type: DataTypes.INTEGER,
-      allowNull: true,
-      field: 'technician_id'
+    technician: {
+      type: Schema.Types.ObjectId,
+      ref: "User",
     },
     requestType: {
-      type: DataTypes.ENUM('corrective', 'preventive'),
-      allowNull: false,
-      field: 'request_type'
+      type: String,
+      enum: ["corrective", "preventive"],
+      required: true,
     },
     status: {
-      type: DataTypes.ENUM('new', 'in_progress', 'repaired', 'scrap'),
-      defaultValue: 'new'
+      type: String,
+      enum: [
+        "new",
+        "assigned",
+        "in_progress",
+        "completed",
+        "cancelled",
+        "scrap",
+      ],
+      default: "new",
     },
     priority: {
-      type: DataTypes.ENUM('low', 'medium', 'high'),
-      defaultValue: 'medium'
+      type: String,
+      enum: ["low", "medium", "high", "critical"],
+      default: "medium",
     },
     scheduledDate: {
-      type: DataTypes.DATEONLY,
-      allowNull: true,
-      field: 'scheduled_date'
+      type: Date,
     },
-    durationHours: {
-      type: DataTypes.DECIMAL(5, 2),
-      allowNull: true,
-      field: 'duration_hours'
+    estimatedHours: {
+      type: Number,
+      min: 0,
+    },
+    actualHours: {
+      type: Number,
+      min: 0,
+      default: 0,
     },
     isOverdue: {
-      type: DataTypes.BOOLEAN,
-      defaultValue: false,
-      field: 'is_overdue'
+      type: Boolean,
+      default: false,
     },
     createdBy: {
-      type: DataTypes.INTEGER,
-      allowNull: false,
-      field: 'created_by'
+      type: Schema.Types.ObjectId,
+      ref: "User",
+      required: true,
     },
-    createdAt: {
-      type: DataTypes.DATE,
-      defaultValue: DataTypes.NOW,
-      field: 'created_at'
-    }
-  }, {
-    tableName: 'maintenance_requests',
-    timestamps: false,
-    underscored: true
-  });
+    assignedAt: {
+      type: Date,
+    },
+    startedAt: {
+      type: Date,
+    },
+    completedAt: {
+      type: Date,
+    },
+    notes: [
+      {
+        content: String,
+        createdBy: {
+          type: Schema.Types.ObjectId,
+          ref: "User",
+        },
+        createdAt: {
+          type: Date,
+          default: Date.now,
+        },
+      },
+    ],
+    partsUsed: [
+      {
+        name: String,
+        quantity: Number,
+        cost: Number,
+      },
+    ],
+    totalCost: {
+      type: Number,
+      default: 0,
+    },
+  },
+  {
+    timestamps: true,
+  }
+);
 
-  return MaintenanceRequest;
-};
+// Indexes for better query performance
+maintenanceRequestSchema.index({ status: 1, priority: -1 });
+maintenanceRequestSchema.index({ equipment: 1, createdAt: -1 });
+maintenanceRequestSchema.index({ technician: 1, status: 1 });
+
+module.exports = mongoose.model("MaintenanceRequest", maintenanceRequestSchema);

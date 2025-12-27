@@ -1,41 +1,46 @@
-// models/Notification.js
-const { DataTypes } = require('sequelize');
-
-module.exports = (sequelize) => {
-  const Notification = sequelize.define('Notification', {
-    id: {
-      type: DataTypes.INTEGER,
-      primaryKey: true,
-      autoIncrement: true
-    },
-    userId: {
-      type: DataTypes.INTEGER,
-      allowNull: false,
-      field: 'user_id'
+const notificationSchema = new Schema(
+  {
+    user: {
+      type: Schema.Types.ObjectId,
+      ref: "User",
+      required: true,
     },
     title: {
-      type: DataTypes.STRING(150),
-      allowNull: true
+      type: String,
+      required: true,
     },
     message: {
-      type: DataTypes.TEXT,
-      allowNull: true
+      type: String,
+      required: true,
+    },
+    type: {
+      type: String,
+      enum: ["info", "warning", "error", "success", "maintenance"],
+      default: "info",
     },
     isRead: {
-      type: DataTypes.BOOLEAN,
-      defaultValue: false,
-      field: 'is_read'
+      type: Boolean,
+      default: false,
     },
-    createdAt: {
-      type: DataTypes.DATE,
-      defaultValue: DataTypes.NOW,
-      field: 'created_at'
-    }
-  }, {
-    tableName: 'notifications',
-    timestamps: false,
-    underscored: true
-  });
+    relatedEntity: {
+      type: {
+        type: String,
+        enum: ["maintenance_request", "equipment", "user"],
+      },
+      id: {
+        type: Schema.Types.ObjectId,
+      },
+    },
+    readAt: {
+      type: Date,
+    },
+  },
+  {
+    timestamps: true,
+  }
+);
 
-  return Notification;
-};
+// Index for efficient querying of unread notifications
+notificationSchema.index({ user: 1, isRead: 1, createdAt: -1 });
+
+module.exports = mongoose.model("Notification", notificationSchema);
