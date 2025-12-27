@@ -136,17 +136,59 @@ const MaintenanceTeams = () => {
 };
 
   const handleEditTeam = async (team) => {
-    await fetchTeamDetails(team._id || team.id);
+  try {
+    // Fetch fresh team details from API
+    const response = await fetch(`${API_BASE_URL}/maintenance-teams/${team._id || team.id}`);
+    if (response.ok) {
+      const teamDetails = await response.json();
+      setSelectedTeam(teamDetails);
+      
+      // Prepare edit form data
+      setEditFormData({
+        name: teamDetails.name || '',
+        description: teamDetails.description || '',
+        teamLeader: teamDetails.teamLeader?._id || teamDetails.teamLeader || '',
+        specializations: teamDetails.specializations || []
+      });
+      
+      // Set selected members
+      if (teamDetails.members && teamDetails.members.length > 0) {
+        const memberIds = teamDetails.members.map(member => member._id || member);
+        setSelectedMembers(memberIds);
+      } else {
+        setSelectedMembers([]);
+      }
+    } else {
+      // Use existing team data if API fails
+      setSelectedTeam(team);
+      setEditFormData({
+        name: team.name || '',
+        description: team.description || '',
+        teamLeader: team.teamLeader?._id || team.teamLeader || '',
+        specializations: team.specializations || []
+      });
+      
+      if (team.members && team.members.length > 0) {
+        const memberIds = team.members.map(member => member._id || member);
+        setSelectedMembers(memberIds);
+      } else {
+        setSelectedMembers([]);
+      }
+    }
     
-    // Prepare edit form data
+    setShowEditModal(true);
+    setShowViewModal(false);
+  } catch (err) {
+    console.error('Error in handleEditTeam:', err);
+    // Fallback to existing data
+    setSelectedTeam(team);
     setEditFormData({
-      name: team.name,
+      name: team.name || '',
       description: team.description || '',
       teamLeader: team.teamLeader?._id || team.teamLeader || '',
       specializations: team.specializations || []
     });
     
-    // Set selected members
     if (team.members && team.members.length > 0) {
       const memberIds = team.members.map(member => member._id || member);
       setSelectedMembers(memberIds);
@@ -156,7 +198,8 @@ const MaintenanceTeams = () => {
     
     setShowEditModal(true);
     setShowViewModal(false);
-  };
+  }
+};
 
   const handleDeleteTeam = async (teamId) => {
     if (window.confirm('Are you sure you want to delete this team? This action cannot be undone.')) {
@@ -723,7 +766,7 @@ const MaintenanceTeams = () => {
 
       {/* Add Team Modal */}
       {showAddModal && (
-        <div className="fixed inset-0 bg-white bg-opacity-50 flex items-center justify-center p-4 z-50">
+        <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center p-4 z-50">
           <div 
             className="bg-white rounded-xl shadow-lg max-w-2xl w-full max-h-[90vh] overflow-y-auto"
             style={{ borderColor: '#E6E6EB' }}
@@ -965,7 +1008,7 @@ const MaintenanceTeams = () => {
 
       {/* View Details Modal */}
       {showViewModal && selectedTeam && (
-        <div className="fixed inset-0 bg-white bg-opacity-50 flex items-center justify-center p-4 z-50">
+        <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center p-4 z-50">
           <div 
             className="bg-white rounded-xl shadow-lg max-w-4xl w-full max-h-[90vh] overflow-y-auto"
             style={{ borderColor: '#E6E6EB' }}
