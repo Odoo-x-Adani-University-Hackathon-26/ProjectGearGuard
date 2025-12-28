@@ -95,10 +95,10 @@ GearGuard/
   <h2>🎥 Demo Video</h2>
   <p>
     🔗 <b>Project Demo:</b><br/>
-    <a href="https://your-demo-video-link-here](https://drive.google.com/file/d/1LCqRgLkS9S5YxD_rk4YNosup4Uh-ahAG/view?usp=sharing">
+    <a href="https://drive.google.com/file/d/1LCqRgLkS9S5YxD_rk4YNosup4Uh-ahAG/view?usp=sharing">
       Click To See Video
     </a>
-  </p>
+</p>
 
   <hr/>
 
@@ -106,7 +106,7 @@ GearGuard/
 
   <h3>Clone Repository</h3>
   <pre>
-git clone https://github.com/your-repo-link/GearGuard.git
+git clone https://github.com/Odoo-x-Adani-University-Hackathon-26/ProjectGearGuard.git
 cd GearGuard
   </pre>
 
